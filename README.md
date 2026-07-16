@@ -35,22 +35,22 @@ of the whole class.
 
 ## What makes it different
 
-- 🧭 **It profiles the learner first.** A ~5-minute psychologist-style
+- **It profiles the learner first.** A ~5-minute psychologist-style
   questionnaire (mixed multiple-choice + open subjective answers) is scored by
   an explicit rubric plus NLP, and a Decision Tree predicts a starting level.
-- 🎮 **Studying feels like a game.** Every completed chapter awards real XP and
+- **Studying feels like a game.** Every completed chapter awards real XP and
   coins, grows a live skill map, keeps a streak and unlocks badges.
-- 🧑‍🏫 **The AI teaches, it doesn't tell.** The mentor guides one idea and one
+- **The AI teaches, it doesn't tell.** The mentor guides one idea and one
   question at a time; the full worked solution only unlocks after genuine
   attempts.
-- 🌐 **Live, free resources.** Each chapter pulls a real Wikipedia article
+- **Live, free resources.** Each chapter pulls a real Wikipedia article
   (keyless, free API) plus NCERT / Khan Academy / YouTube / GeoGebra links
   matched to the learner's modality.
-- 👩‍👩‍👧 **A calm mode for special-needs learners** working alongside a parent —
+- **A calm mode for special-needs learners** working alongside a parent —
   plain language, one step at a time, guidance written for the parent.
-- 🧑‍🏫 **A full Teacher Portal** — roster, class insights, lesson planner,
+- **A full Teacher Portal** — roster, class insights, lesson planner,
   assignments, announcements, AI-drafted quiz sets.
-- 🔌 **Provider-agnostic AI** — one interface, seven interchangeable backends
+- **Provider-agnostic AI** — one interface, seven interchangeable backends
   (Gemini, Groq, OpenRouter, Ollama and more), swappable from `.env` with no
   code changes, plus an automatic fallback when the primary is rate-limited.
 
