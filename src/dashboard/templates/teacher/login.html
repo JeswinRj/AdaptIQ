@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Teacher Portal — Adapt IQ{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="crumb"><a href="{{ url_for('landing') }}">← Back</a></p>
+  <p class="wordmark">Adapt IQ · Teacher Portal</p>
+  <h1 class="display-sm">Your class, understood.</h1>
+  <p class="lede">See every learner's profile, get an adaptive teaching guide
+     for each one, plan lessons around how your class actually learns, and
+     assign work that lands directly in their study environment.</p>
+  <div class="card">
+    <form method="post" action="{{ url_for('teacher_login_post') }}" class="stack-form">
+      <label>Your name
+        <input type="text" name="name" required maxlength="40" placeholder="e.g. Mrs. Nair">
+      </label>
+      <button class="btn accent" type="submit">Enter the portal</button>
+      <p class="hint">MVP sign-in — accounts, classes and roles come with the
+         full authentication build.</p>
+    </form>
+  </div>
+</section>
+{% endblock %}

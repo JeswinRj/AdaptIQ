@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Results — {{ title }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <h1 class="display-sm">{{ graded.score }} / {{ graded.total }}</h1>
+  <p class="lede">{{ title }} · +{{ xp }} XP{% if graded.score == graded.total %} — perfect score!{% elif graded.score / graded.total >= 0.6 %} — solid work.{% else %} — every mistake below explains itself; that's where the learning is.{% endif %}</p>
+
+  {% for r in graded.results %}
+  <div class="card">
+    <p class="lib-title">{{ loop.index }}. {{ r.q }}</p>
+    <p>{% if r.correct %}✅{% else %}❌{% endif %}
+       Your answer: <strong>{{ r.given or '—' }}</strong>
+       {% if not r.correct %} · Expected: <strong>{{ r.expected }}</strong>{% endif %}</p>
+    <p class="hint">Concept: {{ r.concept }}</p>
+    {% if r.feedback %}
+    <p style="white-space: pre-line">{{ r.feedback }}</p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if graded.wrong_concepts %}
+  <div class="card">
+    <h2>To revisit</h2>
+    <p>{{ graded.wrong_concepts|unique|join(' · ') }}</p>
+    <p class="hint">These concepts will reappear in your next quizzes until
+       they stick — that's spaced repetition working for you.</p>
+  </div>
+  {% endif %}
+
+  <p>
+    {% if chapter_index is not none %}
+    <a class="btn" href="{{ url_for('chapter', uid=u.id, idx=chapter_index) }}">Back to the chapter</a>
+    {% endif %}
+    <a class="btn" href="{{ url_for('profile', uid=u.id) }}">Home</a>
+  </p>
+</section>
+{% endblock %}

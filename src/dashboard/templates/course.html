@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ course.title }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <h1 class="display-sm">{{ course.title }}</h1>
+  <p class="lede">{% if u.mode == 'specialized' %}
+    Chapters in order. Finished ones have a tick. Open the next one when ready.
+  {% else %}
+    Your chapter map — each one you clear lights up its domain on the skill map.
+  {% endif %}</p>
+
+  <ol class="chapter-list">
+    {% for ch in course.chapters %}
+    {% set i = loop.index0 %}
+    <li class="chapter-row {{ 'done' if i in u.completed_chapters }}">
+      <span class="ch-status">{{ '✓' if i in u.completed_chapters else loop.index }}</span>
+      <div class="ch-body">
+        <a class="ch-name" href="{{ url_for('chapter', uid=u.id, idx=i) }}">{{ ch.name }}</a>
+        <p class="ch-topics">{{ ch.topics|join(' · ') }}</p>
+      </div>
+      <span class="ch-domain">{{ ch.domain }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}

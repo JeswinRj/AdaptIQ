@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <h1 class="display-sm">{{ title }}</h1>
+  <p class="hint">{{ questions|length }} questions · answer what you can —
+     every question comes back with an explanation, not just a mark.</p>
+
+  <form method="post" data-busy="grade" action="{{ url_for('quiz_submit', uid=u.id) }}">
+    {% for q in questions %}
+    <div class="card">
+      <p class="lib-title">{{ loop.index }}. {{ q.q }}</p>
+      {% set i = loop.index0 %}
+      {% if q.type == 'mcq' %}
+        {% for opt in q.options %}
+        <label class="quiz-opt"><input type="radio" name="q{{ i }}"
+               value="{{ opt }}"> {{ opt }}</label>
+        {% endfor %}
+      {% elif q.type == 'tf' %}
+        <label class="quiz-opt"><input type="radio" name="q{{ i }}" value="True"> True</label>
+        <label class="quiz-opt"><input type="radio" name="q{{ i }}" value="False"> False</label>
+      {% else %}
+        <input type="text" name="q{{ i }}" class="quiz-input"
+               placeholder="{% if q.type == 'numeric' %}Number…{% elif q.type == 'fill' %}Fill in the blank…{% else %}Your answer in a sentence or two…{% endif %}">
+      {% endif %}
+      <p class="hint">{{ q.type }} · {{ q.concept }}</p>
+    </div>
+    {% endfor %}
+    <button class="btn accent big" type="submit">Submit answers</button>
+  </form>
+</section>
+{% endblock %}

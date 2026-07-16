@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} — Adapt IQ{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="wordmark">Adapt IQ</p>
+  <h1 class="display-sm">{{ heading }}</h1>
+  <p class="lede">{{ detail }}</p>
+  <div class="card">
+    <p>{{ advice }}</p>
+    <p><a class="btn accent" href="{{ url_for('landing') }}">Go to the start page</a></p>
+    <p class="hint">Nothing is lost — your progress, notes and library are
+       saved automatically.</p>
+  </div>
+</section>
+{% endblock %}

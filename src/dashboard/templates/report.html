@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Learning report — {{ u.name }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <p class="crumb">Assessment complete</p>
+  <h1 class="display-sm">{{ u.name }}'s Learning Report</h1>
+
+  <div class="persona-banner">
+    <div class="persona-mark">{{ persona.name[4] }}</div>
+    <div>
+      <p class="persona-name">{{ persona.name }}</p>
+      <p class="persona-tag">{{ persona.tagline }}</p>
+      <p class="persona-note">A motivational summary of your current profile —
+         it will evolve as you study, and it is not a fixed identity.</p>
+    </div>
+  </div>
+
+  <p class="summary-line">{{ summary }}</p>
+
+  {% if u.followup %}
+  <div class="card">
+    <h2>One more thing your mentor wondered</h2>
+    <p>{{ u.followup }}</p>
+    <p class="hint">Think about it as you study — you can answer it in the
+       mentor box on any chapter page to sharpen your profile.</p>
+  </div>
+  {% endif %}
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Profile dimensions</h2>
+      <p class="hint">Estimates from your responses — not diagnoses. They
+         update as you learn.</p>
+      {% for label, value in dims.items() %}
+      <div class="dim-row">
+        <span class="dim-label">{{ label }}</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ [value, 100]|min }}%"></div></div>
+        <span class="dim-val">{{ [value, 100]|min|round|int }}</span>
+      </div>
+      {% endfor %}
+      <p class="hint">Starting level: <strong class="pill pill-{{ u.content_level }}">{{ u.content_level }}</strong>
+         — a starting point the course adapts around, not a judgement.</p>
+    </div>
+
+    <div class="card">
+      <h2>Strengths</h2>
+      <ul class="tick-list">
+        {% for s in strengths %}<li>{{ s }}</li>{% endfor %}
+      </ul>
+      <h2>Growth areas</h2>
+      <ul class="dot-list">
+        {% for g in growth %}<li>{{ g }}</li>{% endfor %}
+      </ul>
+      <h2>Study recommendations</h2>
+      <ul class="rec-list">
+        <li><strong>Sessions of {{ plan.break_schedule.work_minutes }} minutes,
+            breaks of {{ plan.break_schedule.break_minutes }}</strong>
+            <span class="why">— because your answers suggest
+            {{ 'shorter focus spans that recover quickly with rest'
+               if u.profile.break_frequency == 'high'
+               else ('a steady focus span that benefits from regular resets'
+               if u.profile.break_frequency == 'medium'
+               else 'long, sustained focus once you settle in') }}.</span></li>
+        <li><strong>{{ plan.learner_method.session_tactic }}</strong>
+            <span class="why">— because {{ persona.benefit }} matches how you
+            answered the learning-approach questions.</span></li>
+        <li><strong>{{ plan.gap_advice }}</strong>
+            <span class="why">— based on where you reported losing marks.</span></li>
+        <li><strong>Revise each chapter after 2 days, then after a week.</strong>
+            <span class="why">— spaced review is the most reliable way to keep
+            {{ 'formulas' if u.profile.learning_method == 'memorizer' else 'ideas' }} from fading.</span></li>
+      </ul>
+      <p class="watchout"><strong>Worth watching:</strong> {{ plan.learner_method.watch_out }}</p>
+    </div>
+  </div>
+
+  {% if u.mode == 'specialized' %}
+  <div class="card parent-box">
+    <h2>For the parent</h2>
+    <ul class="rec-list">
+      <li>Sit beside {{ u.name }} for the first step of each session, then step back.</li>
+      <li>Keep sessions to {{ plan.break_schedule.work_minutes }} minutes with a
+          {{ plan.break_schedule.break_minutes }}-minute break — the timer matters more than finishing.</li>
+      <li>Praise the attempt, not the answer. One step a day is real progress.</li>
+      <li>Every chapter page has a plain-language step list you can read aloud.</li>
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="cta-row">
+    <a class="btn accent big" href="{{ url_for('profile', uid=u.id) }}">
+      {% if u.mode == 'specialized' %}Open {{ u.name }}'s home page{% else %}Open my dashboard{% endif %}</a>
+  </div>
+  <p class="hint">This report is a study-planning profile, not a clinical or
+     diagnostic assessment. It updates as {{ u.name }} uses the platform.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% set theme = "calm" if mode == "specialized" else "game" %}
+{% block title %}Get set up — Adapt IQ{% endblock %}
+{% block content %}
+<section class="narrow">
+  <p class="crumb"><a href="{{ url_for('landing') }}">← Back</a></p>
+  <h1 class="display-sm">{% if mode == 'specialized' %}Let's set things up together{% else %}Tell us about yourself{% endif %}</h1>
+  {% if mode == 'specialized' %}
+  <p class="lede">A parent or guardian can fill this in with the learner.
+     Every page after this one uses calm colours and simple language.</p>
+  {% else %}
+  <p class="lede">Two details, then a short assessment builds your learning
+     profile. It takes about five minutes.</p>
+  {% endif %}
+
+  <div class="card">
+    <form method="post" action="{{ url_for('start_post', mode=mode) }}" class="stack-form">
+      <label>{% if mode == 'specialized' %}Learner's name{% else %}Your name{% endif %}
+        <input type="text" name="name" required maxlength="40" placeholder="e.g. Aarav">
+      </label>
+      <label>Course
+        <select name="course_id">
+          {% for cid, c in courses.items() %}
+          <option value="{{ cid }}">{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <p class="hint">CBSE Mathematics, Class 11 and 12, is the launch course.
+         More boards and subjects follow.</p>
+      <button class="btn accent" type="submit">Continue to the assessment</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

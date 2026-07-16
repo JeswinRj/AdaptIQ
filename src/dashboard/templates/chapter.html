@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}{{ ch.name }} — {{ course.short }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <p class="crumb"><a href="{{ url_for('course_view', uid=u.id) }}">← All chapters</a> · {{ ch.domain }}</p>
+  <h1 class="display-sm">{{ ch.name }} {% if done %}<span class="done-tick">completed ✓</span>{% endif %}</h1>
+  <p class="lede">{{ ch.topics|join(' · ') }}</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>{% if u.mode == 'specialized' %}Today's steps{% else %}Session plan{% endif %}</h2>
+      <ol class="steps">
+        {% for s in plan.steps %}
+        <li>
+          <span class="step-text">{% if u.mode == 'specialized' %}{{ s.simple_text }}{% else %}{{ s.text }}{% endif %}</span>
+          <span class="mins">{{ s.minutes }} min</span>
+        </li>
+        {% endfor %}
+      </ol>
+      <p class="hint">{{ plan.learner_method.session_tactic }}</p>
+
+      {% if u.mode == 'specialized' %}
+      <div class="parent-box">
+        <h2>For the parent</h2>
+        <p>Read one step aloud at a time. Use a timer for the
+           {{ plan.break_schedule.work_minutes }}-minute work block and the
+           {{ plan.break_schedule.break_minutes }}-minute break. Stop after the
+           steps even if it feels short — consistency beats length.</p>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{{ url_for('chapter_complete', uid=u.id, idx=idx) }}">
+        <button class="btn accent big" type="submit" {{ 'disabled' if done }}>
+          {% if done %}Chapter completed ✓{% elif u.mode == 'specialized' %}Mark chapter complete{% else %}Complete chapter · +80 XP{% endif %}
+        </button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Study materials</h2>
+      {% if article %}
+      <div class="article-box">
+        <p class="article-head"><a href="{{ article.url }}" target="_blank" rel="noopener">{{ article.title }}</a>
+          <span class="src">{{ article.source }}</span></p>
+        <p>{{ article.summary }}</p>
+      </div>
+      {% endif %}
+      <ul class="link-list">
+        {% for title, url in links %}
+        <li><a href="{{ url }}" target="_blank" rel="noopener">{{ title }}</a></li>
+        {% endfor %}
+      </ul>
+
+      {% if flash %}<p class="flash">{{ flash }}</p>{% endif %}
+
+      <h2>{% if u.mode == 'specialized' %}Your helper{% else %}Your mentor{% endif %}</h2>
+      <p class="hint">{% if u.mode == 'specialized' %}The helper asks small
+        questions and waits for your answer. Take your time.{% else %}The
+        mentor guides you to the answer with questions — it won't just hand
+        you the solution. After a real attempt you can say
+        "show me the full solution".{% endif %}</p>
+
+      {% if mentor_session.messages %}
+      <div class="mentor-thread">
+        {% for m in mentor_session.messages %}
+        <div class="mentor-answer {{ 'asked-row' if m.role == 'student' else ('off' if m.off else 'ok') }}">
+          <p class="asked">{{ 'You' if m.role == 'student' else 'Mentor' }}</p>
+          <p style="white-space: pre-line">{{ m.text }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <form method="post" class="stack-form" data-busy="mentor" action="{{ url_for('chapter_mentor', uid=u.id, idx=idx) }}">
+        <textarea name="message" rows="3" required
+          placeholder="{% if u.mode == 'specialized' %}Type here, e.g. What is a matrix?{% else %}Try the problem, then tell the mentor your thinking…{% endif %}"></textarea>
+        <button class="btn" type="submit">Send to mentor</button>
+      </form>
+      {% if mentor_session.messages %}
+      <form method="post" action="{{ url_for('chapter_mentor_reset', uid=u.id, idx=idx) }}">
+        <button class="quiet-link" type="submit">Start a fresh conversation</button>
+      </form>
+      {% endif %}
+
+      <h2>Practice problem</h2>
+      {% set p = mentor_session.practice %}
+      {% if not p %}
+      <p class="hint">One fresh problem with a hint ladder. Fewer hints =
+         more XP (30 XP with no hints).</p>
+      <form method="post" data-busy="practice" action="{{ url_for('chapter_practice', uid=u.id, idx=idx) }}">
+        <input type="hidden" name="action" value="new">
+        <button class="btn" type="submit">Give me a problem</button>
+      </form>
+      {% else %}
+      <div class="mentor-answer ok">
+        <p style="white-space: pre-line">{{ p.problem }}</p>
+      </div>
+      {% for h in p.hints[:p.hints_used] %}
+      <div class="mentor-answer off">
+        <p class="asked">Hint {{ loop.index }}</p>
+        <p style="white-space: pre-line">{{ h }}</p>
+      </div>
+      {% endfor %}
+      {% if p.solved or p.revealed %}
+        {% if p.solved %}<p class="flash">Solved{{ ' with ' ~ p.hints_used ~ ' hint(s)' if p.hints_used }} ✓</p>{% endif %}
+        {% if p.revealed %}
+        <div class="mentor-answer ok">
+          <p class="asked">Full solution</p>
+          <p style="white-space: pre-line">{{ p.solution }}</p>
+        </div>
+        {% endif %}
+        <form method="post" data-busy="practice" action="{{ url_for('chapter_practice', uid=u.id, idx=idx) }}">
+          <input type="hidden" name="action" value="new">
+          <button class="btn" type="submit">Another problem</button>
+        </form>
+      {% else %}
+      <form method="post" class="inline-form" action="{{ url_for('chapter_practice', uid=u.id, idx=idx) }}">
+        <input type="hidden" name="action" value="answer">
+        <input type="text" name="answer" required placeholder="Your final answer…">
+        <button class="btn accent" type="submit">Check</button>
+      </form>
+      <form method="post" class="inline-form" action="{{ url_for('chapter_practice', uid=u.id, idx=idx) }}">
+        {% if p.hints_used < 4 %}
+        <input type="hidden" name="action" value="hint">
+        <button class="btn" type="submit">Hint {{ p.hints_used + 1 }} of 4</button>
+        {% endif %}
+      </form>
+      <form method="post" class="inline-form" action="{{ url_for('chapter_practice', uid=u.id, idx=idx) }}">
+        <input type="hidden" name="action" value="reveal">
+        <button class="quiet-link" type="submit">Show the full solution (+5 XP only)</button>
+      </form>
+      {% endif %}
+      {% endif %}
+
+      <h2>Micro-quiz</h2>
+      <p class="hint">{{ '6' }} adaptive questions, ~5 minutes. Difficulty
+         follows your recent scores; missed concepts come back.</p>
+      <form method="post" data-busy="quiz" action="{{ url_for('chapter_quiz', uid=u.id, idx=idx) }}">
+        <button class="btn" type="submit">Start the micro-quiz</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

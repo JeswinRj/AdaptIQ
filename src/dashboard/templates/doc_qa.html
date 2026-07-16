@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ doc.title }} — ask this document{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <p class="crumb"><a href="{{ url_for('library', uid=u.id) }}">← Library</a></p>
+  <h1 class="display-sm">{{ doc.title }}</h1>
+  <p class="hint">Answers come from this document only — nothing else is
+     mixed in. {{ doc.attribution or doc.source }} ({{ doc.license }})
+     {% if doc.url %} · <a href="{{ doc.url }}" target="_blank" rel="noopener">original</a>{% endif %}</p>
+
+  <form method="post" class="inline-form lib-search" data-busy="docqa">
+    <input type="text" name="question" value="{{ question }}" required
+           placeholder='Ask something this document should answer…'>
+    <button class="btn accent" type="submit">Ask this document</button>
+  </form>
+
+  {% if answer %}
+    {% if answer.mode == 'ai' %}
+    <div class="card lesson-body">
+      <p style="white-space: pre-line">{{ answer.text }}</p>
+    </div>
+    <div class="card">
+      <h2>Passages used</h2>
+      {% for e in answer.excerpts %}
+      <div class="lesson-item">
+        <p class="hint">[{{ loop.index }}] · match {{ (e.score * 100)|round }}%</p>
+        <p style="white-space: pre-line">{{ e.text|mathsnip }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% elif answer.mode == 'excerpts' %}
+    <p class="flash">{{ answer.message }}</p>
+    {% for e in answer.excerpts %}
+    <div class="card lesson-item">
+      <p class="hint">Match {{ (e.score * 100)|round }}%</p>
+      <p style="white-space: pre-line">{{ e.text|mathsnip(1600) }}</p>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="card"><p>{{ answer.message }}</p></div>
+    {% endif %}
+  {% endif %}
+</section>
+{% endblock %}

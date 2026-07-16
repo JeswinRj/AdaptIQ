@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ lesson.query }} — lesson{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <p class="crumb"><a href="{{ url_for('library', uid=u.id, q=lesson.query) }}">← Library</a></p>
+  <h1 class="display-sm">{{ lesson.query }}</h1>
+  <p class="hint">Built from {{ lesson.hits }} library source{{ 's' if lesson.hits != 1 }}
+     {% if lesson.mode == 'ai' %} · synthesized with citations{% else %}
+     · assembled from the library{% endif %}.</p>
+
+  {% if lesson.mode == 'ai' %}
+  <div class="card lesson-body">
+    <p style="white-space: pre-line">{{ lesson.text }}</p>
+  </div>
+  {% else %}
+    {% for section in lesson.sections %}
+    <div class="card">
+      <h2>{{ section.label }}</h2>
+      {% for item in section["items"] %}
+      <div class="lesson-item">
+        <p style="white-space: pre-line">{{ item.text|mathsnip(1600) }}</p>
+        <p class="hint">— {{ item.title }} ({{ item.attribution }})</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    {% if not lesson.sections %}
+    <div class="card"><p>Nothing in the library covers this yet, and AI note
+      generation is not configured. Ask your teacher to upload material, or
+      add your own notes from the Library page.</p></div>
+    {% endif %}
+  {% endif %}
+
+  {% if lesson.links %}
+  <div class="card">
+    <h2>Official sources</h2>
+    <ul class="link-list">
+      {% for l in lesson.links %}
+      <li><a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.title }}</a>
+          <span class="hint">— opens on the official site</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% if lesson.sources %}
+  <div class="card">
+    <h2>Sources &amp; licenses</h2>
+    <ul class="link-list">
+      {% for s in lesson.sources %}
+      <li>[{{ s.n }}] {{ s.title }} — {{ s.attribution or s.source }} ({{ s.license }})
+        {% if s.url %} · <a href="{{ s.url }}" target="_blank" rel="noopener">original</a>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% set theme = "game" %}
+{% block title %}Adapt IQ — learning, arranged around you{% endblock %}
+{% block content %}
+<section class="landing">
+  <p class="wordmark">Adapt&nbsp;IQ</p>
+  <h1 class="display">Learning, arranged<br>around <em>you</em>.</h1>
+  <p class="display-sub">A short assessment maps how you study best. Then your
+     course — CBSE Mathematics, Class 11 &amp; 12 — is paced, explained and
+     practised the way that works for you.</p>
+
+  <div class="entry-grid">
+    <a class="entry-card" href="{{ url_for('start', mode='regular') }}">
+      <span class="entry-kicker">For students</span>
+      <h2>Regular Student</h2>
+      <p>Your personal study plan with quests, streaks and a growing
+         skill map.</p>
+      <span class="entry-go">Begin →</span>
+    </a>
+    <a class="entry-card" href="{{ url_for('start', mode='specialized') }}">
+      <span class="entry-kicker">For families</span>
+      <h2>Special Learning Support</h2>
+      <p>A calm, steady version designed to be used together with a parent
+         — plain language, one step at a time.</p>
+      <span class="entry-go">Begin together →</span>
+    </a>
+    <a class="entry-card" href="{{ url_for('teacher_login') }}">
+      <span class="entry-kicker">For schools</span>
+      <h2>Teacher Portal</h2>
+      <p>Every learner understood: adaptive teaching guides, lesson planning
+         and class insights.</p>
+      <span class="entry-go">Enter →</span>
+    </a>
+  </div>
+
+  <ol class="quiet-steps">
+    <li>Answer a short assessment</li>
+    <li>See how you learn best</li>
+    <li>Follow a plan built for you</li>
+    <li>Watch your skill map grow</li>
+  </ol>
+
+  {% if current %}
+  <p class="continue-line">Welcome back,
+    <a href="{{ url_for('profile', uid=current.id) }}">continue as {{ current.name }} →</a></p>
+  {% endif %}
+</section>
+{% endblock %}

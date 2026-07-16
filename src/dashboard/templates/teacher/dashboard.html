@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Class — Teacher Portal{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a class="on" href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <h1 class="display-sm">Your class</h1>
+  {% for tip in insights %}<p class="summary-line tight">{{ tip }}</p>{% endfor %}
+
+  {% if not rows %}
+  <div class="card"><p>No students have completed the assessment yet. Students
+    appear here automatically once they finish onboarding.</p></div>
+  {% else %}
+  <div class="roster">
+    {% for r in rows %}
+    <a class="roster-card status-{{ r.status|replace(' ', '-') }}"
+       href="{{ url_for('teacher_student', uid=r.user.id) }}">
+      <div class="roster-head">
+        <strong>{{ r.user.name }}</strong>
+        <span class="status-chip">{{ r.status }}</span>
+      </div>
+      <p class="roster-sub">Level {{ r.game.level }} · {{ r.game.xp }} XP ·
+        🔥 {{ r.streak }} · {{ r.course.short }}
+        {% if r.user.mode == 'specialized' %} · with parent{% endif %}</p>
+      <div class="dim-row"><span class="dim-label">Progress</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ r.progress }}%"></div></div>
+        <span class="dim-val">{{ r.progress }}%</span></div>
+      <div class="dim-row"><span class="dim-label">Confidence</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ r.dims['Confidence'] }}%"></div></div>
+        <span class="dim-val">{{ r.dims['Confidence'] }}</span></div>
+      <div class="dim-row"><span class="dim-label">Focus</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ r.dims['Attention endurance'] }}%"></div></div>
+        <span class="dim-val">{{ r.dims['Attention endurance'] }}</span></div>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Assign work</h2>
+      <form method="post" action="{{ url_for('teacher_assign') }}" class="stack-form">
+        <input type="hidden" name="back" value="{{ url_for('teacher_dashboard') }}">
+        <label>Student
+          <select name="uid">
+            <option value="all">Whole class</option>
+            {% for r in rows %}<option value="{{ r.user.id }}">{{ r.user.name }}</option>{% endfor %}
+          </select>
+        </label>
+        <label>Chapter number (1-based within their course)
+          <input type="number" name="chapter" min="1" max="14" value="1" class="numeric slim">
+        </label>
+        <label>Note <input type="text" name="note" maxlength="120"
+               placeholder="e.g. Finish before Friday's class"></label>
+        <label>Due <input type="text" name="due" maxlength="20" placeholder="e.g. Friday"></label>
+        <button class="btn accent" type="submit">Assign</button>
+      </form>
+      <p class="hint">Assignments appear on the student's home page and are
+         marked done when they complete the chapter.</p>
+    </div>
+    <div class="card">
+      <h2>Announcement</h2>
+      <form method="post" action="{{ url_for('teacher_announce') }}" class="stack-form">
+        <textarea name="message" rows="3" required
+          placeholder="e.g. Unit test on Matrices next Monday — revise worked examples."></textarea>
+        <button class="btn" type="submit">Send to class</button>
+      </form>
+
+      <h2>Share study material with the class</h2>
+      <p class="hint">Uploads are auto-tagged to the syllabus, become
+         searchable in every student's Library, and rank first in their
+         lessons (teacher-endorsed).</p>
+      <form method="post" enctype="multipart/form-data" class="stack-form"
+            data-busy="upload" action="{{ url_for('teacher_upload') }}">
+        <label>Title <input type="text" name="title" maxlength="80" required
+               placeholder="e.g. Integration by parts — class worksheet"></label>
+        <label>Type
+          <select name="resource_type">
+            <option value="notes">Notes</option>
+            <option value="formula">Formula sheet</option>
+            <option value="example">Worked examples</option>
+            <option value="practice">Worksheet / practice</option>
+            <option value="summary">Revision summary</option>
+          </select>
+        </label>
+        <label>Paste text <textarea name="text" rows="3"
+               placeholder="…or upload a file below"></textarea></label>
+        <label>Or upload (.pdf / .txt) <input type="file" name="file" accept=".pdf,.txt"></label>
+        <button class="btn" type="submit">Share with class</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

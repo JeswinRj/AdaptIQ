@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}{{ u.name }} — Teacher Portal{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <p class="crumb"><a href="{{ url_for('teacher_dashboard') }}">← Class</a></p>
+  <h1 class="display-sm">{{ u.name }}
+    <span class="status-chip inline status-{{ r.status|replace(' ', '-') }}">{{ r.status }}</span></h1>
+  <p class="summary-line tight">{{ summary }}</p>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Learning profile</h2>
+      <p><strong>{{ persona.name }}</strong> — {{ persona.tagline }}
+         <span class="hint">(motivational summary; evolves with use)</span></p>
+      {% for label, value in r.dims.items() %}
+      <div class="dim-row">
+        <span class="dim-label">{{ label }}</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ [value, 100]|min }}%"></div></div>
+        <span class="dim-val">{{ [value, 100]|min|round|int }}</span>
+      </div>
+      {% endfor %}
+      <p class="hint">Level {{ r.game.level }} · {{ r.game.xp }} XP ·
+        🔥 {{ r.streak }}-day streak · {{ r.progress }}% of {{ r.course.short }}
+        · starting level <strong class="pill pill-{{ u.content_level }}">{{ u.content_level }}</strong></p>
+
+      <h2>Assign to {{ u.name }}</h2>
+      <form method="post" action="{{ url_for('teacher_assign') }}" class="stack-form">
+        <input type="hidden" name="uid" value="{{ u.id }}">
+        <input type="hidden" name="back" value="{{ url_for('teacher_student', uid=u.id) }}">
+        <label>Chapter
+          <select name="chapter">
+            {% for ch in course.chapters %}
+            <option value="{{ loop.index }}">{{ loop.index }}. {{ ch.name }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Note <input type="text" name="note" maxlength="120"
+               placeholder="e.g. Focus on the worked examples first"></label>
+        <label>Due <input type="text" name="due" maxlength="20" placeholder="e.g. Friday"></label>
+        <button class="btn accent" type="submit">Assign</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Adaptive teaching guide</h2>
+      <p class="hint">Generated from {{ u.name }}'s assessment and activity —
+         suggestions to weigh with your professional judgement, not replace it.</p>
+      <dl class="guide">
+        {% for topic, rec, why in guide %}
+        <div class="guide-item">
+          <dt>{{ topic }}</dt>
+          <dd>{{ rec }} <span class="why">— {{ why }}.</span></dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Performance by concept</h2>
+      {% if concept_gaps %}
+      <p class="hint">Concepts this student misses most in quizzes —
+         reteach these first.</p>
+      <ul class="link-list">
+        {% for concept, misses in concept_gaps %}
+        <li>{{ concept }} <span class="hint">— missed {{ misses }}×</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="hint">No quiz data yet. Assign a quiz from the Quizzes tab
+         to start tracking concepts.</p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h2>Recent quizzes</h2>
+      {% if quiz_log %}
+      <ul class="link-list">
+        {% for q in quiz_log %}
+        <li>{{ q.date }} · {{ q.kind }} · <strong>{{ q.score }}/{{ q.total }}</strong>
+            {% if q.wrong_concepts %}<span class="hint">— missed: {{ q.wrong_concepts|unique|join(', ') }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="hint">No quizzes taken yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if u.assignments %}
+  <div class="card">
+    <h2>Assigned work</h2>
+    <ul class="link-list">
+      {% for a in u.assignments|reverse %}
+      <li>{{ '✓' if a.done else '○' }} Chapter {{ a.chapter_index + 1 }} —
+          {{ course.chapters[a.chapter_index].name if a.chapter_index < course.chapters|length }}
+          {% if a.note %}· “{{ a.note }}”{% endif %}
+          {% if a.due %}· due {{ a.due }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Lesson planner — Teacher Portal{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a class="on" href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <h1 class="display-sm">Lesson planner</h1>
+  <p class="lede">Plans are built around your class's actual learner profiles
+     — dominant learning approach, attention endurance, and who needs support.</p>
+
+  <div class="card">
+    <form method="post" class="inline-form wrap">
+      <label>Course
+        <select name="course_id">
+          {% for cid, c in courses.items() %}
+          <option value="{{ cid }}" {{ 'selected' if cid == sel_course }}>{{ c.title }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Chapter
+        <select name="chapter">
+          {% for ch in courses[sel_course].chapters %}
+          <option value="{{ loop.index0 }}" {{ 'selected' if loop.index0 == sel_chapter }}>
+            {{ loop.index }}. {{ ch.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>Class time (minutes)
+        <input type="number" name="minutes" min="20" max="120" value="{{ sel_minutes }}" class="numeric slim">
+      </label>
+      <button class="btn accent" type="submit">Generate plan</button>
+    </form>
+  </div>
+
+  {% if plan %}
+  <div class="card">
+    <div class="card-title-row">
+      <h2>{{ plan.chapter }} — {{ plan.duration }} minute lesson</h2>
+      <span class="hint">{{ plan.class_note }}</span>
+    </div>
+    <h2>Objectives</h2>
+    <ul class="tick-list">
+      {% for o in plan.objectives %}<li>{{ o }}</li>{% endfor %}
+    </ul>
+    <h2>Sequence</h2>
+    <ol class="steps">
+      {% for s in plan.sequence %}
+      <li><strong>{{ s.phase }}</strong> — {{ s.detail }}
+          <span class="mins">{{ s.minutes }} min</span></li>
+      {% endfor %}
+    </ol>
+    <h2>Homework</h2>
+    <p>{{ plan.homework }}</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

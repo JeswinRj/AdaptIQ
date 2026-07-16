@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Quizzes — Teacher Portal{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a class="on" href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <h1 class="display-sm">AI quiz sets — review, edit, approve, assign</h1>
+  <p class="summary-line tight">The AI drafts a quiz; nothing reaches
+     students until you approve it. Edit or drop any question first.</p>
+  {% if flash %}<p class="flash">{{ flash }}</p>{% endif %}
+
+  <div class="card">
+    <h2>Generate a draft quiz</h2>
+    <form method="post" class="inline-form" data-busy="draft" action="{{ url_for('teacher_quiz_generate') }}">
+      <select name="course_id">
+        {% for cid, c in courses.items() %}<option value="{{ cid }}">{{ c.short }}</option>{% endfor %}
+      </select>
+      <select name="chapter">
+        {% for i in range(14) %}<option value="{{ i }}">Chapter {{ i + 1 }}</option>{% endfor %}
+      </select>
+      <select name="difficulty">
+        <option value="gentle">Gentle</option>
+        <option value="standard" selected>Standard</option>
+        <option value="challenging">Challenging</option>
+      </select>
+      <button class="btn accent" type="submit">Draft with AI</button>
+    </form>
+  </div>
+
+  {% if editing %}
+  <div class="card">
+    <h2>Review: {{ editing.title }}</h2>
+    <form method="post" class="stack-form" action="{{ url_for('teacher_quiz_save', qid=editing.id) }}">
+      {% for q in editing.questions %}
+      <div class="lesson-item">
+        <label>Q{{ loop.index }} ({{ q.type }}{% if q.options %} · options: {{ q.options|join(' / ') }}{% endif %})
+          <textarea name="q{{ loop.index0 }}" rows="2">{{ q.q }}</textarea></label>
+        <label>Answer <input type="text" name="a{{ loop.index0 }}" value="{{ q.answer }}"></label>
+        <label>Explanation shown to students
+          <textarea name="e{{ loop.index0 }}" rows="2">{{ q.explanation }}</textarea></label>
+        <label class="quiz-opt"><input type="checkbox" name="drop{{ loop.index0 }}"> Drop this question</label>
+      </div>
+      {% endfor %}
+      <label class="quiz-opt"><input type="checkbox" name="approve" checked> Approve for assignment</label>
+      <button class="btn accent" type="submit">Save quiz set</button>
+    </form>
+  </div>
+  {% endif %}
+
+  {% for qs in quiz_sets %}
+  <div class="card">
+    <div class="card-title-row">
+      <p class="lib-title">{{ qs.title }}</p>
+      <span class="chips tight">
+        <span class="chip">{{ qs.questions|length }} questions</span>
+        <span class="chip {{ 'streak' if qs.approved }}">{{ 'approved ✓' if qs.approved else 'draft' }}</span>
+      </span>
+    </div>
+    <p class="hint">Created {{ qs.created }}</p>
+    {% if qs.approved and qs.submissions %}
+    <p class="hint">{{ qs.submissions|length }} submission{{ 's' if qs.submissions|length != 1 }} so far ·
+      <a href="{{ url_for('teacher_quiz_results', qid=qs.id) }}">View results &amp; insights →</a></p>
+    {% elif qs.approved %}
+    <p class="hint">Assigned quiz — results will appear here once students submit.
+      <a href="{{ url_for('teacher_quiz_results', qid=qs.id) }}">Open results →</a></p>
+    {% endif %}
+    <div class="inline-form">
+      <a class="btn" href="{{ url_for('teacher_quiz_edit', qid=qs.id) }}">Review / edit</a>
+      {% if qs.approved %}
+      <a class="btn" href="{{ url_for('teacher_quiz_results', qid=qs.id) }}">Results</a>
+      <form method="post" class="inline-form" action="{{ url_for('teacher_quiz_assign', qid=qs.id) }}">
+        <select name="uid">
+          <option value="all">Whole class</option>
+          {% for s in students %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+        </select>
+        <input type="text" name="due" placeholder="Due (e.g. Friday)" maxlength="20">
+        <button class="btn" type="submit">Assign</button>
+      </form>
+      {% endif %}
+      <form method="post" class="inline-form" action="{{ url_for('teacher_quiz_delete', qid=qs.id) }}">
+        <button class="quiet-link" type="submit">Delete</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

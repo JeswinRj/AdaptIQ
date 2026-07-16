@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}{{ u.name }} — Adapt IQ{% endblock %}
+
+{# thin-stroke line icons, inherit accent colour — no emoji, keeps the
+   paper / ink / terracotta aesthetic consistent #}
+{% macro nav_icon(name) %}
+<span class="tile-ico" aria-hidden="true">
+{% if name == 'course' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.6C10.4 5.4 8.3 4.9 4 5.1v12.6c4.3-.2 6.4.3 8 1.5 1.6-1.2 3.7-1.7 8-1.5V5.1c-4.3-.2-6.4.3-8 1.5Z"/><path d="M12 6.6v12.1"/></svg>
+{% elif name == 'report' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5v14h15"/><path d="M8 15.5l3.2-3.6 2.4 2 3.9-4.9"/></svg>
+{% elif name == 'library' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M19.5 19.5 15.3 15.3"/></svg>
+{% elif name == 'notes' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5h7L18 8v12.5H6.5Z"/><path d="M13.5 3.5V8H18"/><path d="M9.3 12.5h5.4"/><path d="M9.3 16h5.4"/></svg>
+{% elif name == 'rewards' %}
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5 13.4 10l2.8.4-2 2 .5 2.8L12 15.9 9.3 17.2l.5-2.8-2-2 2.8-.4Z"/><circle cx="12" cy="12" r="8.5"/></svg>
+{% endif %}
+</span>
+{% endmacro %}
+
+{% block content %}
+
+{% if u.mode == 'specialized' %}
+<section class="narrow-wide">
+  <h1 class="display-sm">{{ u.name }}'s progress</h1>
+  <p class="lede">{{ summary }}</p>
+
+  <nav class="home-tiles" aria-label="Go to">
+    <a class="home-tile" href="{{ url_for('course_view', uid=u.id) }}">
+      {{ nav_icon('course') }}
+      <span class="tile-name">Course</span>
+      <span class="tile-sub">Chapters, one step at a time</span></a>
+    <a class="home-tile" href="{{ url_for('report', uid=u.id) }}">
+      {{ nav_icon('report') }}
+      <span class="tile-name">Report</span>
+      <span class="tile-sub">How {{ u.name }} learns</span></a>
+    <a class="home-tile" href="{{ url_for('library', uid=u.id) }}">
+      {{ nav_icon('library') }}
+      <span class="tile-name">Library</span>
+      <span class="tile-sub">Find learning material</span></a>
+    <a class="home-tile" href="{{ url_for('notes', uid=u.id) }}">
+      {{ nav_icon('notes') }}
+      <span class="tile-name">Notes</span>
+      <span class="tile-sub">Make a short summary</span></a>
+  </nav>
+  <div class="two-col">
+    <div class="card">
+      <h2>Chapters finished</h2>
+      <p class="bigstat">{{ game.chapters_done }} <span class="of">of {{ course.chapters|length }}</span></p>
+      <div class="meter tall"><div class="meter-fill" style="width: {{ (game.chapters_done / course.chapters|length * 100)|round }}%"></div></div>
+      <p class="hint">Days studied in a row: <strong>{{ game.streak }}</strong></p>
+      {% if next_ch is not none %}
+      <a class="btn accent" href="{{ url_for('chapter', uid=u.id, idx=next_ch) }}">
+        Next: {{ course.chapters[next_ch].name }}</a>
+      {% else %}
+      <p><strong>All chapters are finished. Wonderful work.</strong></p>
+      {% endif %}
+    </div>
+    <div class="card">
+      <h2>Strength areas</h2>
+      {% for n in nodes %}
+      <div class="dim-row">
+        <span class="dim-label">{{ n.name }}</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ n.mastery }}%"></div></div>
+        <span class="dim-val">{{ n.mastery }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="card parent-box">
+    <h2>For the parent</h2>
+    <p>One chapter step per sitting is enough. Open the next chapter, read the
+       step list aloud, and let {{ u.name }} press "Mark chapter complete"
+       themselves — finishing something matters.</p>
+  </div>
+</section>
+
+{% else %}
+<section class="dash">
+  <header class="dash-head">
+    <div class="level-ring" title="Level {{ game.level }}">
+      <svg viewBox="0 0 84 84">
+        <circle cx="42" cy="42" r="36" class="ring-track"/>
+        <circle cx="42" cy="42" r="36" class="ring-fill"
+          stroke-dasharray="{{ (game.xp_into_level / game.xp_for_level * 226.2)|round(1) }} 226.2"/>
+      </svg>
+      <div class="ring-center"><small>LEVEL</small><strong>{{ game.level }}</strong></div>
+    </div>
+    <div class="dash-id">
+      <h1 class="display-sm">{{ u.name }}</h1>
+      <p class="summary-line tight">{{ summary }}</p>
+      <div class="chips">
+        <span class="chip streak">🔥 {{ game.streak }}-day streak</span>
+        <span class="chip">{{ game.xp_into_level }}/{{ game.xp_for_level }} XP to level {{ game.level + 1 }}</span>
+        {% for icon, label in game.badges %}<span class="chip">{{ icon }} {{ label }}</span>{% endfor %}
+      </div>
+    </div>
+  </header>
+
+  <nav class="home-tiles" aria-label="Go to">
+    <a class="home-tile" href="{{ url_for('course_view', uid=u.id) }}">
+      {{ nav_icon('course') }}
+      <span class="tile-name">Course</span>
+      <span class="tile-sub">Chapters &amp; lessons</span></a>
+    <a class="home-tile" href="{{ url_for('report', uid=u.id) }}">
+      {{ nav_icon('report') }}
+      <span class="tile-name">Report</span>
+      <span class="tile-sub">Your learning profile</span></a>
+    <a class="home-tile" href="{{ url_for('library', uid=u.id) }}">
+      {{ nav_icon('library') }}
+      <span class="tile-name">Library</span>
+      <span class="tile-sub">Search &amp; ask documents</span></a>
+    <a class="home-tile" href="{{ url_for('notes', uid=u.id) }}">
+      {{ nav_icon('notes') }}
+      <span class="tile-name">Notes</span>
+      <span class="tile-sub">Summarise your notes</span></a>
+    <a class="home-tile" href="{{ url_for('rewards', uid=u.id) }}">
+      {{ nav_icon('rewards') }}
+      <span class="tile-name">Rewards</span>
+      <span class="tile-sub">Spend your coins</span></a>
+  </nav>
+
+  {% if pending or announcements %}
+  <div class="teacher-strip">
+    {% if pending %}
+    <div class="card">
+      <h2>From {{ teacher or 'your teacher' }}</h2>
+      <ul class="link-list">
+        {% for a in pending %}
+        <li>{% if a.quiz_id %}
+            <a href="{{ url_for('quiz_assigned', uid=u.id, qid=a.quiz_id) }}">📝
+            {{ a.note or 'Assigned quiz' }}</a>
+            {% else %}
+            <a href="{{ url_for('chapter', uid=u.id, idx=a.chapter_index) }}">
+            {{ course.chapters[a.chapter_index].name if a.chapter_index < course.chapters|length else 'Chapter ' ~ (a.chapter_index + 1) }}</a>
+            {% if a.note %}— “{{ a.note }}”{% endif %}
+            {% endif %}
+            {% if a.due %}<span class="hint"> · due {{ a.due }}</span>{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+    {% if announcements %}
+    <div class="card">
+      <h2>Announcements</h2>
+      <ul class="link-list">
+        {% for a in announcements %}<li>{{ a.message }} <span class="hint">· {{ a.date }}</span></li>{% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if u.completed_chapters %}
+  <div class="card">
+    <div class="card-title-row">
+      <h2>Weekly revision</h2>
+      <form method="post" data-busy="revision" action="{{ url_for('quiz_revision', uid=u.id) }}">
+        <button class="btn" type="submit">Start revision quiz</button>
+      </form>
+    </div>
+    <p class="hint">Spaced repetition: mixes your current topic with your
+       oldest completed chapters and the concepts you've missed before.</p>
+  </div>
+  {% endif %}
+
+  <div class="dash-grid">
+    <div class="card span2">
+      <div class="card-title-row">
+        <h2>Today's quest</h2>
+        <a class="quiet-link" href="{{ url_for('course_view', uid=u.id) }}">Full chapter map →</a>
+      </div>
+      {% if next_ch is not none %}
+      <a class="quest-card" href="{{ url_for('chapter', uid=u.id, idx=next_ch) }}">
+        <div>
+          <p class="quest-name">{{ course.chapters[next_ch].name }}</p>
+          <p class="quest-sub">{{ course.chapters[next_ch].topics[:3]|join(' · ') }}</p>
+        </div>
+        <span class="quest-xp">+80 XP</span>
+      </a>
+      {% else %}
+      <p><strong>Course complete — every chapter mastered.</strong></p>
+      {% endif %}
+      <div class="meter tall"><div class="meter-fill" style="width: {{ (game.chapters_done / course.chapters|length * 100)|round }}%"></div></div>
+      <p class="hint">{{ game.chapters_done }} of {{ course.chapters|length }} chapters cleared</p>
+    </div>
+
+    <div class="card">
+      <h2>Learning health</h2>
+      {% for label, value in health.items() %}
+      <div class="dim-row">
+        <span class="dim-label">{{ label }}</span>
+        <div class="meter"><div class="meter-fill" style="width: {{ value }}%"></div></div>
+        <span class="dim-val">{{ value }}</span>
+      </div>
+      {% endfor %}
+      <p class="hint">Estimates that update as you study.</p>
+      <a class="quiet-link" href="{{ url_for('report', uid=u.id) }}">Read your full report →</a>
+    </div>
+
+    <div class="card constellation-card span3">
+      <div class="card-title-row">
+        <h2>Skill map — {{ course.short }}</h2>
+        <span class="hint">domains light up as chapters are mastered</span>
+      </div>
+      <div class="constellation">
+        <svg viewBox="0 0 340 340" class="skill-map">
+          {% for n in nodes %}
+          <line x1="170" y1="170" x2="{{ n.x }}" y2="{{ n.y }}"
+                class="map-line {{ 'lit' if n.mastery > 0 }}"/>
+          {% endfor %}
+          {% for n in nodes %}{% if loop.index0 < nodes|length - 1 %}
+          <line x1="{{ n.x }}" y1="{{ n.y }}" x2="{{ nodes[loop.index0 + 1].x }}" y2="{{ nodes[loop.index0 + 1].y }}" class="map-line faint"/>
+          {% endif %}{% endfor %}
+          <circle cx="170" cy="170" r="27" class="map-core"/>
+          <text x="170" y="175" class="map-core-label">Maths</text>
+          {% for n in nodes %}
+          <g>
+            {% if n.mastery > 0 %}<circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ 15 + n.mastery / 9 }}" class="map-halo"/>{% endif %}
+            <circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ 12 + n.mastery / 9 }}"
+                    class="map-node {{ 'lit' if n.mastery > 0 }}"/>
+            <text x="{{ n.x }}" y="{{ n.y + 4 }}" class="map-pct">{{ n.mastery }}%</text>
+            <text x="{{ n.x }}" y="{{ n.y + 36 }}" class="map-label">{{ n.name }}</text>
+          </g>
+          {% endfor %}
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

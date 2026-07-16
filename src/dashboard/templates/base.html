@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}ADAPT-IQ{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script defer src="{{ url_for('static', filename='busy.js') }}"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+          onload="renderMathInElement(document.body, {
+            delimiters: [
+              {left: '$$', right: '$$', display: true},
+              {left: '\\[', right: '\\]', display: true},
+              {left: '\\(', right: '\\)', display: false},
+              {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+          })"></script>
+</head>
+<body class="{{ theme|default('game') }}">
+  {% if u is defined and u and not (teacher is defined and teacher) %}
+  <nav class="topnav">
+    <a class="brand" href="{{ url_for('profile', uid=u.id) }}">Adapt&nbsp;IQ</a>
+    <div class="navlinks">
+      <a href="{{ url_for('profile', uid=u.id) }}">Home</a>
+      <a href="{{ url_for('course_view', uid=u.id) }}">Course</a>
+      <a href="{{ url_for('report', uid=u.id) }}">Report</a>
+      <a href="{{ url_for('library', uid=u.id) }}">Library</a>
+      <a href="{{ url_for('notes', uid=u.id) }}">Notes</a>
+      <a href="{{ url_for('rewards', uid=u.id) }}">Rewards</a>
+    </div>
+    <span class="chip coin">🪙 {{ u.coins|default(0) }}</span>
+    <span class="navuser">{{ u.name }}{% if u.mode == 'specialized' %} · with parent{% endif %}</span>
+  </nav>
+  {% endif %}
+  <main class="shell">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}{{ qs.title }} — results{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a class="on" href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <p class="crumb"><a href="{{ url_for('teacher_quizzes') }}">← All quizzes</a></p>
+  <h1 class="display-sm">{{ qs.title }}</h1>
+  <p class="hint">{{ qs.questions|length }} questions · created {{ qs.created }}</p>
+
+  <div class="stat-strip">
+    <div class="stat-box">
+      <p class="bigstat">{{ a.submitted }}<span class="of"> / {{ a.assigned }}</span></p>
+      <p class="hint">students submitted</p>
+    </div>
+    <div class="stat-box">
+      <p class="bigstat">{{ a.avg_pct }}%</p>
+      <p class="hint">class average</p>
+    </div>
+    <div class="stat-box">
+      <p class="bigstat">{{ a.pending }}</p>
+      <p class="hint">still to submit</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Insights</h2>
+    <p class="hint">Computed from real submissions — not AI-generated.</p>
+    <ul class="insight-list">
+      {% for line in a.insights %}<li>{{ line }}</li>{% endfor %}
+    </ul>
+  </div>
+
+  {% if a.per_q and a.submitted %}
+  <div class="two-col">
+    <div class="card">
+      <h2>How each question went</h2>
+      {% for p in a.per_q %}
+      <div class="dim-row">
+        <span class="dim-label">Q{{ p.n }}
+          <span class="hint">· {{ p.concept }}</span></span>
+        <div class="meter"><div class="meter-fill {{ 'weak' if p.pct <= 50 }}"
+             style="width: {{ p.pct }}%"></div></div>
+        <span class="dim-val">{{ p.pct }}%</span>
+      </div>
+      {% endfor %}
+      <p class="hint">Share of students who answered each question correctly.</p>
+    </div>
+
+    <div class="card">
+      <h2>Most-missed concepts</h2>
+      {% if a.missed %}
+      <ul class="link-list">
+        {% for concept, count in a.missed %}
+        <li>{{ concept }} <span class="hint">· missed by {{ count }}
+          student{{ 's' if count != 1 }}</span></li>
+        {% endfor %}
+      </ul>
+      <p class="hint">Good candidates for a quick reteach or a targeted
+         revision assignment.</p>
+      {% else %}
+      <p class="hint">No wrong answers recorded yet.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Submissions &amp; solutions</h2>
+    {% if not a.submissions %}
+    <p class="hint">No student has completed this quiz yet. As submissions come
+       in, each student's answers and score appear here.</p>
+    {% else %}
+    <p class="hint">Ranked by score. Open a student to see exactly what they
+       answered, question by question.</p>
+    {% for s in a.submissions %}
+    <details class="submission">
+      <summary>
+        <span class="sub-name">{{ s.name }}</span>
+        <span class="sub-score {{ 'good' if s.total and s.score / s.total >= 0.6 else 'low' }}">
+          {{ s.score }} / {{ s.total }}</span>
+        <span class="hint">· {{ s.date }}{% if s.attempts > 1 %} · {{ s.attempts }} attempts{% endif %}</span>
+      </summary>
+      <ol class="sub-answers">
+        {% for r in s.results %}
+        <li class="{{ 'ok' if r.correct else 'off' }}">
+          <p class="sub-q">{{ r.q }}</p>
+          <p class="sub-line">
+            <span class="tick">{{ '✓' if r.correct else '✗' }}</span>
+            Answered: <strong>{{ r.given or '(blank)' }}</strong>
+            {% if not r.correct %}<span class="hint">· expected: {{ r.expected }}</span>{% endif %}
+          </p>
+          <p class="hint">Concept: {{ r.concept }}</p>
+        </li>
+        {% endfor %}
+      </ol>
+    </details>
+    {% endfor %}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

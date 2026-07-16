@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Library — {{ u.name }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <h1 class="display-sm">{% if u.mode == 'specialized' %}Find learning material{% else %}Knowledge Library{% endif %}</h1>
+  <p class="lede">Search everything — formula sheets, worked examples,
+     practice sets, encyclopedia overviews, your own notes and your teacher's
+     materials. Search by meaning, not just exact words.</p>
+
+  <form method="get" class="inline-form lib-search" data-busy="search">
+    <input type="text" name="q" value="{{ q }}" required
+           placeholder='Try “integration by parts”, “probability formulas”, “matrices examples”…'>
+    <button class="btn accent" type="submit">Search</button>
+    {% if q %}
+    <a class="btn" data-busy-link="lesson" href="{{ url_for('library_lesson', uid=u.id, q=q) }}">Teach me this →</a>
+    {% endif %}
+  </form>
+
+  {% if message %}<p class="flash">{{ message }}</p>{% endif %}
+
+  {% if q and not hits %}
+  <div class="card"><p>Nothing indexed for that yet. Try
+    <a data-busy-link="lesson" href="{{ url_for('library_lesson', uid=u.id, q=q) }}">Teach me this</a>
+    — the lesson builder can create notes for it.</p></div>
+  {% endif %}
+
+  {% for h in hits %}
+  <div class="card lib-hit">
+    <div class="card-title-row">
+      <p class="lib-title">{{ h.title }}</p>
+      <span class="chips tight">
+        <span class="chip">{{ h.resource_type }}</span>
+        <span class="chip">{{ h.source }}</span>
+        {% if h.teacher_endorsed %}<span class="chip streak">teacher ✓</span>{% endif %}
+      </span>
+    </div>
+    {% if h.link_only %}
+      <p class="hint">{{ h.attribution }} — this source can't be copied here,
+         so it opens on the official site.</p>
+      <a class="quiet-link" href="{{ h.url }}" target="_blank" rel="noopener">Open source →</a>
+    {% else %}
+      <p class="lib-snippet">{{ h.text|mathsnip }}</p>
+      <p class="hint">{{ h.attribution }} · {{ h.license }}
+        {% if h.url %} · <a href="{{ h.url }}" target="_blank" rel="noopener">original</a>{% endif %}
+        · <a href="{{ url_for('library_doc', uid=u.id, doc_id=h.doc_id) }}">Ask this document →</a></p>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  {% if my_docs %}
+  <div class="card">
+    <h2>My documents</h2>
+    <p class="hint">Your uploads, private to you. Open one to ask questions
+       answered from that document only.</p>
+    <ul class="link-list">
+      {% for d in my_docs %}
+      <li><a href="{{ url_for('library_doc', uid=u.id, doc_id=d.id) }}">{{ d.title }}</a>
+          <span class="hint">— {{ d.chunk_count }} section{{ 's' if d.chunk_count != 1 }} · Ask this document →</span></li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <h2>Add your own material</h2>
+    <p class="hint">Upload a PDF or paste notes — they become searchable for
+       you (private) and feed your lessons. By uploading you confirm you own
+       the material or have the right to use it.</p>
+    <form method="post" enctype="multipart/form-data" class="stack-form"
+          data-busy="upload" action="{{ url_for('library_upload', uid=u.id) }}">
+      <label>Title <input type="text" name="title" maxlength="80"
+             placeholder="e.g. Integration class notes"></label>
+      <label>Paste text <textarea name="text" rows="4"
+             placeholder="…or use the file field below"></textarea></label>
+      <label>Or upload a file (.pdf / .txt)
+        <input type="file" name="file" accept=".pdf,.txt"></label>
+      <button class="btn" type="submit">Add to my library</button>
+    </form>
+  </div>
+
+  {% if stats %}
+  <p class="hint">Library index: {{ stats.documents }} documents ·
+     {{ stats.chunks }} searchable sections.</p>
+  {% endif %}
+</section>
+{% endblock %}

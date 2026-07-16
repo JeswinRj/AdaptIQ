@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Rewards — {{ u.name }}{% endblock %}
+{% block content %}
+<section class="narrow-wide">
+  <div class="card-title-row">
+    <h1 class="display-sm">Rewards</h1>
+    <span class="chip coin big-coin">🪙 {{ u.coins }} coins</span>
+  </div>
+  <p class="lede">Studying earns coins — every completed chapter pays
+     <strong>+25</strong>. Spend them on real-life rewards. Watch an episode,
+     play a game, eat a treat: it's up to you.</p>
+
+  {% if message %}<p class="flash">{{ message }}</p>{% endif %}
+
+  <div class="reward-grid">
+    {% for r in rewards %}
+    <form method="post" class="reward-card">
+      <input type="hidden" name="name" value="{{ r.name }}">
+      <input type="hidden" name="cost" value="{{ r.cost }}">
+      <span class="reward-icon">{{ r.icon }}</span>
+      <p class="reward-name">{{ r.name }}</p>
+      <button class="coin-btn" type="submit" {{ 'disabled' if u.coins < r.cost }}>
+        🪙 {{ r.cost }}</button>
+    </form>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h2>Make your own reward</h2>
+    <form method="post" class="inline-form">
+      <input type="text" name="name" required maxlength="50"
+             placeholder="e.g. Movie night">
+      <input type="number" name="cost" required min="1" max="500"
+             placeholder="cost" class="numeric slim">
+      <button class="btn" type="submit">Redeem</button>
+    </form>
+  </div>
+
+  {% if u.redeemed %}
+  <div class="card">
+    <h2>Recently enjoyed</h2>
+    <ul class="link-list">
+      {% for r in u.redeemed|reverse %}
+      {% if loop.index <= 6 %}<li>{{ r.name }} — 🪙 {{ r.cost }} · {{ r.date }}</li>{% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Insights — Teacher Portal{% endblock %}
+{% block content %}
+<section>
+  <nav class="subnav">
+    <span class="wordmark">Teacher Portal</span>
+    <a href="{{ url_for('teacher_dashboard') }}">Class</a>
+    <a class="on" href="{{ url_for('teacher_insights') }}">Insights</a>
+    <a href="{{ url_for('teacher_planner') }}">Lesson planner</a>
+    <a href="{{ url_for('teacher_quizzes') }}">Quizzes</a>
+    <span class="navuser">{{ teacher }} · <a href="{{ url_for('teacher_switch') }}">Switch teacher</a></span>
+  </nav>
+
+  <h1 class="display-sm">Class insights</h1>
+  <p class="lede">Computed continuously from real activity — to support your
+     judgement, not replace it.</p>
+
+  <div class="card">
+    <h2>What the data suggests</h2>
+    <ul class="rec-list">
+      {% for tip in insights %}<li>{{ tip }}</li>{% endfor %}
+    </ul>
+  </div>
+
+  <div class="two-col">
+    <div class="card constellation-card">
+      <div class="card-title-row">
+        <h2>Class mastery map</h2>
+        <span class="hint">average across all students</span>
+      </div>
+      <div class="constellation">
+        <svg viewBox="0 0 340 340" class="skill-map">
+          {% for n in nodes %}
+          <line x1="170" y1="170" x2="{{ n.x }}" y2="{{ n.y }}"
+                class="map-line {{ 'lit' if n.mastery > 0 }}"/>
+          {% endfor %}
+          <circle cx="170" cy="170" r="27" class="map-core"/>
+          <text x="170" y="175" class="map-core-label">Class</text>
+          {% for n in nodes %}
+          <g>
+            {% if n.mastery > 0 %}<circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ 15 + n.mastery / 9 }}" class="map-halo"/>{% endif %}
+            <circle cx="{{ n.x }}" cy="{{ n.y }}" r="{{ 12 + n.mastery / 9 }}"
+                    class="map-node {{ 'lit' if n.mastery > 0 }}"/>
+            <text x="{{ n.x }}" y="{{ n.y + 4 }}" class="map-pct">{{ n.mastery }}%</text>
+            <text x="{{ n.x }}" y="{{ n.y + 36 }}" class="map-label">{{ n.name }}</text>
+          </g>
+          {% endfor %}
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Students by status</h2>
+      {% for status in ['needs support', 'disengaging', 'on track', 'excelling'] %}
+      {% set group = rows|selectattr('status', 'equalto', status)|list %}
+      {% if group %}
+      <p class="dim-label status-head">{{ status|title }} ({{ group|length }})</p>
+      <ul class="link-list">
+        {% for r in group %}
+        <li><a href="{{ url_for('teacher_student', uid=r.user.id) }}">{{ r.user.name }}</a>
+            — {{ r.progress }}% · confidence {{ r.dims['Confidence'] }} · 🔥 {{ r.streak }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
