@@ -1,6 +1,6 @@
 # ADAPT-IQ — Personalized Learning Platform
 
-### CBSE Class 11 & 12 Mathematics · A learning platform that *first learns the learner*
+### Any subject · any class · any age group — a platform that *first learns the learner*
 
 <p align="center">
   <img src="docs/screenshots/landing.png" alt="Adapt IQ landing page — Learning, arranged around you" width="100%">
@@ -8,11 +8,23 @@
 
 ADAPT-IQ is a self-serve e-learning platform built around a simple idea: before
 it teaches you anything, it works out **how you learn best** — then paces,
-explains and drills the CBSE Mathematics curriculum the way that actually
+explains and drills **whatever course you're taking** the way that actually
 works for you. Progress is turned into a game (HP, XP, levels, streaks, badges,
 a skill web that lights up as you master chapters), an AI mentor coaches you
 Socratically instead of just handing over answers, and teachers get a live view
 of the whole class.
+
+> **The engine is subject-, class- and age-agnostic.** Every curriculum lives
+> in plain data files, so a course for any subject, any grade or any age group
+> slots in without touching application code. To keep the whole experience easy
+> to test end-to-end, **this build ships with two sample courses — CBSE
+> Mathematics, Class 11 & 12** — but nothing in the platform is tied to maths,
+> to CBSE, or to those grades.
+
+It also runs in two experiences you choose at the door — a gamified **Regular
+Mode** for independent learners, and a calm **[Special Educational Needs
+mode](#special-educational-needs-sen-mode)** for learners with additional needs
+working alongside a parent or carer.
 
 ---
 
@@ -20,6 +32,7 @@ of the whole class.
 
 - [What makes it different](#what-makes-it-different)
 - [Two modes, one curriculum](#two-modes-one-curriculum)
+  - [Special Educational Needs (SEN) mode](#special-educational-needs-sen-mode)
 - [How it works](#how-it-works)
 - [Screenshots](#screenshots)
 - [The AI Mentor (Socratic, not a chatbot)](#the-ai-mentor-socratic-not-a-chatbot)
@@ -35,6 +48,14 @@ of the whole class.
 
 ## What makes it different
 
+- **Not tied to one subject, class or age.** The curriculum is just data files,
+  so any course — any subject, any grade, any age group — can be added with no
+  code changes. This build ships two sample courses (CBSE Maths 11 & 12) purely
+  to make the platform easy to test.
+- **A dedicated Special Educational Needs mode.** A calm, plain-language,
+  one-step-at-a-time experience for learners with additional needs, designed to
+  be used **together with a parent or carer** — see
+  [below](#special-educational-needs-sen-mode).
 - **It profiles the learner first.** A ~5-minute psychologist-style
   questionnaire (mixed multiple-choice + open subjective answers) is scored by
   an explicit rubric plus NLP, and a Decision Tree predicts a starting level.
@@ -46,8 +67,6 @@ of the whole class.
 - **Live, free resources.** Each chapter pulls a real Wikipedia article
   (keyless, free API) plus NCERT / Khan Academy / YouTube / GeoGebra links
   matched to the learner's modality.
-- **A calm mode for special-needs learners** working alongside a parent —
-  plain language, one step at a time, guidance written for the parent.
 - **A full Teacher Portal** — roster, class insights, lesson planner,
   assignments, announcements, AI-drafted quiz sets.
 - **Provider-agnostic AI** — one interface, seven interchangeable backends
@@ -58,21 +77,44 @@ of the whole class.
 
 ## Two modes, one curriculum
 
-On entry you make an **explicit choice** — the app never labels or infers
-anything about the learner from their answers:
+On entry you make an **explicit choice** of experience — the app never labels,
+infers or diagnoses anything about the learner from their answers:
 
-| Regular Mode | Specialized Mode |
+| Regular Mode | Special Educational Needs mode |
 | --- | --- |
-| For students. A game-style journey: HP, XP, levels, streaks, badges, and a skill web that lights up as chapters are mastered. | For special-needs learners working **with a parent**: calm pages, plain language (reading age ≈ 8), one step at a time, and guidance boxes written for the parent helping alongside. |
+| For independent learners. A game-style journey: HP, XP, levels, streaks, badges, and a skill web that lights up as chapters are mastered. | For learners with additional / special educational needs, working **with a parent or carer**: calm pages, plain language (reading age ≈ 8), one step at a time, and guidance boxes written for the adult helping alongside. |
 
-Specialized Mode simplifies the **wording and pacing, never the curriculum**.
+### Special Educational Needs (SEN) mode
+
+ADAPT-IQ ships with a first-class mode built specifically for learners with
+**additional or special educational needs**, meant to be used **together with a
+parent, carer or support teacher**. It is chosen explicitly at the door
+("Special Learning Support") — the app never guesses that a learner needs it.
+
+- **Plain, literal language** — every screen is rewritten to a reading age of
+  ≈ 8: short sentences, no idioms, no jargon.
+- **One step at a time** — calm, uncluttered pages with a single clear action
+  each, and gentle pacing so nothing feels rushed or crowded.
+- **Guidance for the adult alongside** — each page carries a box that tells the
+  parent / carer exactly how to help with *this* step.
+- **The AI adapts too** — in SEN mode the mentor, quizzes and doubt-solver are
+  all instructed to answer in short, literal, simple sentences.
+- **Same curriculum, never watered down** — SEN mode simplifies the **wording,
+  layout and pacing, never the content or the learning goals**. Learners work
+  through the same chapters toward the same outcomes.
+
+Because the mode is an explicit choice (not an inference) and only changes *how*
+material is presented, it keeps the experience dignified: the learner is never
+labelled, and never given a lesser curriculum.
 
 ---
 
 ## How it works
 
-1. **Onboarding** — name + course (launch course: Mathematics Class 11 or 12,
-   CBSE/NCERT; more subjects slot in later).
+1. **Onboarding** — pick your experience (Regular / Special Learning Support /
+   Teacher), then enter name + course. The course list is data-driven, so any
+   subject, grade or age group can be added; the two sample courses in this
+   build are CBSE Mathematics, Class 11 and 12.
 2. **In-app questionnaire** (~5 min) — a psychologist-style instrument mixing
    direct multiple-choice and subjective open questions
    ([docs/questionnaire_and_scoring.md](docs/questionnaire_and_scoring.md)).
@@ -353,7 +395,9 @@ attach a disk or swap in a database.
 - Resource links: the Wikipedia article is fetched live; other materials are
   curated search/portal links (NCERT, Khan Academy, YouTube, GeoGebra) — a
   vetted per-chapter content library is the natural next step.
-- One course at launch (Maths 11/12 CBSE) by design; the curriculum module is
-  shaped so more courses/subjects drop in as data files.
+- The **engine is subject-, class- and age-agnostic** by design — curricula
+  live in plain data files (`src/curriculum/`). This build ships **two sample
+  courses (CBSE Maths 11 & 12) only to keep testing simple**; adding another
+  subject, grade or age group is a data change, not a code change.
 - Cloud AI providers are implemented and ready but untested against live keys;
   Ollama is locally testable by anyone.
